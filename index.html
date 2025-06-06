@@ -100,7 +100,7 @@
     }
 
     function updateFlag() {
-      fetch('https://raw.githubusercontent.com/Nagupark/ProximaSesion/main/flag.json')
+      fetch('https://raw.githubusercontent.com/Nagupark/ProximaSesion/main/flag.json?cache=' + new Date().getTime())
         .then(res => res.json())
         .then(data => {
           const color = data.color.toLowerCase();
