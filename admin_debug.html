@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control de Bandera - Nagupark (Modo Depuración)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 1.2em;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .green { background-color: #4CAF50; color: white; }
+    .yellow { background-color: #FFEB3B; color: black; }
+    .red { background-color: #F44336; color: white; }
+    #debug {
+      margin-top: 30px;
+      text-align: left;
+      width: 90%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      font-family: monospace;
+      background: #f8f8f8;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Establecer la Bandera Actual (Depuración)</h1>
+  <button class="green" onclick="setFlag('green')">Bandera Verde</button>
+  <button class="yellow" onclick="setFlag('yellow')">Bandera Amarilla</button>
+  <button class="red" onclick="setFlag('red')">Bandera Roja</button>
+
+  <p id="status" style="margin-top: 30px; font-size: 1.2em;"></p>
+  <pre id="debug"></pre>
+
+  <script>
+    const token = 'PASTE_YOUR_PERSONAL_ACCESS_TOKEN_HERE'; // Replace with your GitHub token
+    const owner = 'Nagupark';
+    const repo = 'ProximaSesion';
+    const path = 'flag.json';
+
+    async function setFlag(color) {
+      const fileUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+      const debug = document.getElementById("debug");
+
+      try {
+        const res = await fetch(fileUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json"
+          }
+        });
+
+        const fileData = await res.json();
+        debug.textContent = "GET flag.json response:\n" + JSON.stringify(fileData, null, 2);
+
+        if (!res.ok) throw new Error(fileData.message || 'No se pudo obtener el archivo.');
+
+        const updatedContent = btoa(JSON.stringify({ color }));
+
+        const updateRes = await fetch(fileUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json"
+          },
+          body: JSON.stringify({
+            message: `Bandera cambiada a ${color}`,
+            content: updatedContent,
+            sha: fileData.sha
+          })
+        });
+
+        const updateData = await updateRes.json();
+        debug.textContent += "\n\nPUT flag.json response:\n" + JSON.stringify(updateData, null, 2);
+
+        if (!updateRes.ok) throw new Error(updateData.message || 'Error al actualizar la bandera.');
+
+        document.getElementById("status").textContent = `✅ Bandera actualizada a ${color.toUpperCase()}`;
+      } catch (err) {
+        console.error(err);
+        document.getElementById("status").textContent = "❌ Error al cambiar la bandera.";
+        debug.textContent += "\n\nERROR:\n" + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
