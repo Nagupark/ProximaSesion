@@ -107,7 +107,7 @@
           const validColors = ['green', 'yellow', 'red'];
           const img = document.getElementById("flag-image");
           if (validColors.includes(color)) {
-            img.src = color + '.png';
+            img.src = color + '.png?cache=' + new Date().getTime();
             img.alt = 'Bandera ' + color;
           } else {
             img.src = '';
@@ -124,7 +124,7 @@
     updateTimer();
     updateFlag();
     setInterval(updateTimer, 1000);
-    setInterval(updateFlag, 60000);
+    setInterval(updateFlag, 5000);
   </script>
 </body>
 </html>
