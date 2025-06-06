@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuenta Regresiva de Sesión</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: white;
+      color: #333;
+      text-align: center;
+      padding: 30px;
+    }
+
+    #logo {
+      width: 180px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-bottom: 0.2em;
+    }
+
+    #timer {
+      font-size: 5em;
+      font-weight: bold;
+      margin-top: 0.3em;
+      color: #00796b;
+    }
+
+    #status {
+      font-size: 1.5em;
+      margin-top: 1em;
+    }
+
+    #next-session {
+      font-size: 1.2em;
+      margin-top: 2em;
+      color: #555;
+    }
+
+    #flag-display {
+      margin-top: 2em;
+      font-size: 1.4em;
+    }
+
+    #flag-image {
+      margin-top: 10px;
+      width: 120px;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <img id="logo" src="logo-nagupark.svg" alt="Logo Nagupark" />
+
+  <h1>La siguiente sesión empieza en:</h1>
+  <div id="timer">--:--</div>
+  <div id="status"></div>
+  <div id="next-session"></div>
+  <div id="flag-display">
+    🏴 Bandera actual:
+    <div><img id="flag-image" src="" alt="Cargando bandera..."></div>
+  </div>
+
+  <script>
+    function updateTimer() {
+      const now = new Date();
+      const currentHour = now.getHours();
+
+      if (currentHour >= 11 && currentHour < 20) {
+        const nextHour = new Date();
+        nextHour.setHours(currentHour + 1, 0, 0, 0);
+
+        const diff = nextHour - now;
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById("timer").textContent =
+          String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+        document.getElementById("status").textContent =
+          `Sesión en curso: ${String(currentHour).padStart(2, '0')}:00 - ${String(currentHour + 1).padStart(2, '0')}:00`;
+
+        if (currentHour + 1 < 20) {
+          const nextStart = String(currentHour + 1).padStart(2, '0') + ":00";
+          const nextEnd = String(currentHour + 2).padStart(2, '0') + ":00";
+          document.getElementById("next-session").textContent =
+            `Próxima sesión: ${nextStart} - ${nextEnd}`;
+        } else {
+          document.getElementById("next-session").textContent = "";
+        }
+      } else {
+        document.getElementById("timer").textContent = "--:--";
+        document.getElementById("status").textContent = "El parque acuático está cerrado.";
+        document.getElementById("next-session").textContent = "";
+      }
+    }
+
+    function updateFlag() {
+      fetch('https://raw.githubusercontent.com/AshleyShare/NaguparkTiempo/main/flag.json')
+        .then(res => res.json())
+        .then(data => {
+          const color = data.color.toLowerCase();
+          const validColors = ['green', 'yellow', 'red'];
+          const img = document.getElementById("flag-image");
+          if (validColors.includes(color)) {
+            img.src = color + '.png';
+            img.alt = 'Bandera ' + color;
+          } else {
+            img.src = '';
+            img.alt = 'Bandera no disponible';
+          }
+        })
+        .catch(() => {
+          const img = document.getElementById("flag-image");
+          img.src = '';
+          img.alt = 'Error al cargar la bandera';
+        });
+    }
+
+    updateTimer();
+    updateFlag();
+    setInterval(updateTimer, 1000);
+    setInterval(updateFlag, 60000);
+  </script>
+</body>
+</html>
